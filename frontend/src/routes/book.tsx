@@ -3,14 +3,11 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { listenPlaceStatusChange, PlaceStatus } from "@/lib/placeStatus";
 
 export const Route = createFileRoute("/book")({
   component: BookComponent,
 });
-
-interface PlaceStatus {
-  chair_list: string[];
-}
 
 interface QueueResp {
   queue_number: number;
@@ -61,7 +58,7 @@ function BookComponent() {
     <div className="p-2">
       <h1 className="font-bold text-xl">Welcome to Restaurant</h1>
       <div className="py-2">
-        <PlaceStatus />
+        <PlaceStatusComp />
       </div>
 
       <div className="max-w-sm my-2">
@@ -71,15 +68,11 @@ function BookComponent() {
   );
 }
 
-function PlaceStatus() {
+function PlaceStatusComp() {
   const [placeStatus, setPlaceStatus] = useState<PlaceStatus>();
 
   useEffect(() => {
-    const url = `/api/stream-place-status`;
-    const evSource = new EventSource(url);
-    evSource.addEventListener("message", (ev) => {
-      setPlaceStatus(JSON.parse(ev.data));
-    });
+    listenPlaceStatusChange(setPlaceStatus);
   }, []);
 
   return (

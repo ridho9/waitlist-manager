@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+
+	"github.com/go-chi/chi/v5"
 )
 
 type PostQueueBody struct {
@@ -41,4 +43,21 @@ func PostQueue(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(201)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(resp)
+}
+
+func GetQueue(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	queueId := chi.URLParam(r, "queueId")
+	queue, err := model.GetQueueInfo(ctx, queueId)
+	if err != nil {
+		http.Error(w, fmt.Sprint(err), http.StatusInternalServerError)
+		return
+	}
+	if queue == nil {
+		http.Error(w, "queue id not found", http.StatusNotFound)
+		return
+	}
+	w.WriteHeader(200)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(queue)
 }

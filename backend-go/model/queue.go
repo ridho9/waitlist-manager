@@ -4,8 +4,14 @@ import (
 	"backend-go/valkey"
 	"context"
 	"fmt"
+	"strconv"
 	"sync"
 )
+
+type QueueInfo struct {
+	Name   string `json:"name"`
+	Number int64  `json:"number"`
+}
 
 var queueWriteLock sync.Mutex
 
@@ -71,4 +77,28 @@ func AddNewQueue(ctx context.Context, partyName string, partyNumber int) (int64,
 	}
 
 	return newQueueNumber, nil
+}
+
+func GetQueueInfo(ctx context.Context, queueId string) (*QueueInfo, error) {
+	cmd := valkey.B().Hgetall().Key(fmt.Sprintf("party:%s", queueId)).Build()
+	resp := valkey.Client().Do(ctx, cmd)
+	if resp.Error() != nil {
+		return nil, resp.Error()
+	}
+
+	arr, _ := resp.ToArray()
+	fmt.Println(arr)
+
+	vals, err := resp.AsStrMap()
+	if err != nil {
+		return nil, err
+	}
+	if len(vals) == 0 {
+		return nil, nil
+	}
+
+	name := vals["name"]
+	number, _ := strconv.Atoi(vals["number"])
+
+	return &QueueInfo{Name: name, Number: int64(number)}, nil
 }

@@ -26,6 +26,7 @@ func main() {
 
 		r.Get("/stream-place-status", routes.StreamPlaceStatus)
 		r.Post("/queue", routes.PostQueue)
+		r.Get("/queue/{queueId}", routes.GetQueue)
 	})
 
 	PORT := os.Getenv("BE_PORT")
