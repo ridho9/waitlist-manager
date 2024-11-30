@@ -32,7 +32,7 @@ msgLoop:
 			fmt.Println("connection closed!")
 			break msgLoop
 		default:
-			placeStatus, _ := getPlaceStatus(ctx)
+			placeStatus, _ := model.GetPlaceStatus(ctx)
 			queueStatus, err := getQueueStatus(ctx, queueId)
 			queueStatus.PlaceStatus = placeStatus
 			if err != nil {
@@ -49,7 +49,7 @@ msgLoop:
 }
 
 type QueueStatus struct {
-	PlaceStatus
+	model.PlaceStatus
 	Ready     bool `json:"ready"`
 	CheckedIn bool `json:"checked_in"`
 }

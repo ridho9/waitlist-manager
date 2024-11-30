@@ -90,9 +90,6 @@ func GetQueueInfo(ctx context.Context, queueId string) (*QueueInfo, error) {
 		return nil, resp.Error()
 	}
 
-	arr, _ := resp.ToArray()
-	fmt.Println(arr)
-
 	vals, err := resp.AsStrMap()
 	if err != nil {
 		return nil, err
