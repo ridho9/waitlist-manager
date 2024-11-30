@@ -3,3 +3,17 @@ services:
     image: valkey/valkey:8
     ports:
       - "8502:6379"
+  caddy:
+    image: caddy:2.9
+    ports:
+      - "80:80"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - ./site:/srv
+      - caddy_data:/data
+      - caddy_config:/config
+    network_mode: "host"
+
+volumes:
+  caddy_data:
+  caddy_config:

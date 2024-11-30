@@ -29,13 +29,10 @@ function BookComponent() {
           party_name: data.partyName,
           party_number: data.partyNumber,
         };
-        const resp = await fetch(
-          `${import.meta.env.VITE_BACKEND_HOST}/api/queue`,
-          {
-            method: "POST",
-            body: JSON.stringify(body),
-          }
-        );
+        const resp = await fetch(`/api/queue`, {
+          method: "POST",
+          body: JSON.stringify(body),
+        });
         const respBody = await resp.json();
         setAssignedQueue(respBody);
         console.log("start timeout");
@@ -78,7 +75,7 @@ function PlaceStatus() {
   const [placeStatus, setPlaceStatus] = useState<PlaceStatus>();
 
   useEffect(() => {
-    const url = `${import.meta.env.VITE_BACKEND_HOST}/api/stream-place-status`;
+    const url = `/api/stream-place-status`;
     const evSource = new EventSource(url);
     evSource.addEventListener("message", (ev) => {
       setPlaceStatus(JSON.parse(ev.data));

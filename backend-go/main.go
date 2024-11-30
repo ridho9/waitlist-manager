@@ -33,7 +33,7 @@ func main() {
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {
-		http.ListenAndServe(fmt.Sprintf(":%s", PORT), r)
+		http.ListenAndServe(fmt.Sprintf("0.0.0.0:%s", PORT), r)
 		wg.Done()
 	}()
 
