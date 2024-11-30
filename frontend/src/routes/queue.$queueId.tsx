@@ -34,10 +34,14 @@ function RouteComponent() {
   const queueNumber = parseInt(params.queueId);
   const { queueInfo } = Route.useLoaderData();
 
-  const [placeStatus, setPlaceStatus] = useState<PlaceStatus>();
+  const [queueStatus, setQueueStatus] = useState();
 
   useEffect(() => {
-    listenPlaceStatusChange(setPlaceStatus);
+    const url = `/api/queue/${queueNumber}/stream-status`;
+    const evSource = new EventSource(url);
+    evSource.addEventListener("message", (ev) => {
+      setQueueStatus(JSON.parse(ev.data));
+    });
   }, []);
 
   return (
@@ -45,7 +49,7 @@ function RouteComponent() {
       <p>Queue number {queueNumber}</p>
       <p>Name: {queueInfo.name}</p>
       <p>Number: {queueInfo.number}</p>
-      <p>Status: {JSON.stringify(placeStatus)}</p>
+      <p>Queue status: {JSON.stringify(queueStatus)}</p>
     </div>
   );
 }

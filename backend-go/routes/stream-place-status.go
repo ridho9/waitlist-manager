@@ -2,7 +2,7 @@ package routes
 
 import (
 	"backend-go/model"
-	"backend-go/valkey"
+	"backend-go/vk"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -32,9 +32,9 @@ msgLoop:
 				jsonData, _ := json.Marshal(placeStatus)
 				fmt.Fprintf(w, "data: %s\n\n", jsonData)
 			}
-			time.Sleep(2 * time.Second)
 			w.(http.Flusher).Flush()
 		}
+		time.Sleep(2 * time.Second)
 	}
 
 }
@@ -61,8 +61,8 @@ func getPlaceStatus(ctx context.Context) (PlaceStatus, error) {
 }
 
 func fetchChairStatus(ctx context.Context) ([]string, error) {
-	cmd := valkey.B().Lrange().Key("chair").Start(0).Stop(-1).Build()
-	resp := valkey.Client().Do(ctx, cmd)
+	cmd := vk.B().Lrange().Key("chair").Start(0).Stop(-1).Build()
+	resp := vk.Client().Do(ctx, cmd)
 
 	if resp.Error() != nil {
 		return nil, resp.Error()

@@ -1,23 +1,26 @@
 package model
 
 import (
-	"backend-go/valkey"
+	"backend-go/vk"
 	"context"
 	"fmt"
 	"strconv"
 	"sync"
+
+	"github.com/valkey-io/valkey-go"
 )
 
 type QueueInfo struct {
-	Name   string `json:"name"`
-	Number int64  `json:"number"`
+	Name      string `json:"name"`
+	Number    int64  `json:"number"`
+	CheckedIn bool   `json:"checked_in"`
 }
 
 var queueWriteLock sync.Mutex
 
 func incrQueueNumber(ctx context.Context) (int64, error) {
-	cmd := valkey.B().Incr().Key("queue-number").Build()
-	resp := valkey.Client().Do(ctx, cmd)
+	cmd := vk.B().Incr().Key("queue-number").Build()
+	resp := vk.Client().Do(ctx, cmd)
 	if resp.Error() != nil {
 		return 0, resp.Error()
 	}
@@ -25,8 +28,8 @@ func incrQueueNumber(ctx context.Context) (int64, error) {
 }
 
 func pushQueueNumber(ctx context.Context, queueNumber int64) error {
-	cmd := valkey.B().Rpush().Key("queue-list").Element(fmt.Sprint(queueNumber)).Build()
-	resp := valkey.Client().Do(ctx, cmd)
+	cmd := vk.B().Rpush().Key("queue-list").Element(fmt.Sprint(queueNumber)).Build()
+	resp := vk.Client().Do(ctx, cmd)
 	if resp.Error() != nil {
 		return resp.Error()
 	}
@@ -34,8 +37,8 @@ func pushQueueNumber(ctx context.Context, queueNumber int64) error {
 }
 
 func GetQueueList(ctx context.Context) ([]int64, error) {
-	cmd := valkey.B().Lrange().Key("queue-list").Start(0).Stop(-1).Build()
-	resp := valkey.Client().Do(ctx, cmd)
+	cmd := vk.B().Lrange().Key("queue-list").Start(0).Stop(-1).Build()
+	resp := vk.Client().Do(ctx, cmd)
 	if resp.Error() != nil {
 		return nil, resp.Error()
 	}
@@ -43,8 +46,8 @@ func GetQueueList(ctx context.Context) ([]int64, error) {
 }
 
 func GetLastQueueNumber(ctx context.Context) (int64, error) {
-	cmd := valkey.B().Get().Key("queue-number").Build()
-	resp := valkey.Client().Do(ctx, cmd)
+	cmd := vk.B().Get().Key("queue-number").Build()
+	resp := vk.Client().Do(ctx, cmd)
 	if resp.Error() != nil {
 		return 0, resp.Error()
 	}
@@ -64,14 +67,15 @@ func AddNewQueue(ctx context.Context, partyName string, partyNumber int) (int64,
 		return 0, err
 	}
 
-	cmd := valkey.B().Hset().
+	cmd := vk.B().Hset().
 		Key(fmt.Sprintf("party:%d", newQueueNumber)).
 		FieldValue().
 		FieldValue("name", partyName).
 		FieldValue("number", fmt.Sprint(partyNumber)).
+		FieldValue("checked-in", "0").
 		Build()
 
-	resp := valkey.Client().Do(ctx, cmd)
+	resp := vk.Client().Do(ctx, cmd)
 	if resp.Error() != nil {
 		return 0, resp.Error()
 	}
@@ -80,8 +84,8 @@ func AddNewQueue(ctx context.Context, partyName string, partyNumber int) (int64,
 }
 
 func GetQueueInfo(ctx context.Context, queueId string) (*QueueInfo, error) {
-	cmd := valkey.B().Hgetall().Key(fmt.Sprintf("party:%s", queueId)).Build()
-	resp := valkey.Client().Do(ctx, cmd)
+	cmd := vk.B().Hgetall().Key(fmt.Sprintf("party:%s", queueId)).Build()
+	resp := vk.Client().Do(ctx, cmd)
 	if resp.Error() != nil {
 		return nil, resp.Error()
 	}
@@ -99,6 +103,28 @@ func GetQueueInfo(ctx context.Context, queueId string) (*QueueInfo, error) {
 
 	name := vals["name"]
 	number, _ := strconv.Atoi(vals["number"])
+	checkedIn := vals["checked-in"] == "1"
 
-	return &QueueInfo{Name: name, Number: int64(number)}, nil
+	return &QueueInfo{Name: name, Number: int64(number), CheckedIn: checkedIn}, nil
+}
+
+func GetReadyQueue(ctx context.Context) (string, error) {
+	cmd := vk.B().Get().Key("queue-ready").Build()
+	resp := vk.Client().Do(ctx, cmd)
+
+	if resp.Error() != nil {
+		if resp.Error() == valkey.Nil {
+			return "", nil
+		}
+
+		return "", resp.Error()
+	}
+
+	return resp.ToString()
+}
+
+func SetReadyQueue(ctx context.Context, queueId string) error {
+	cmd := vk.B().Set().Key("queue-ready").Value(queueId).Build()
+	resp := vk.Client().Do(ctx, cmd)
+	return resp.Error()
 }

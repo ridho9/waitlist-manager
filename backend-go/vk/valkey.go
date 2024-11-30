@@ -1,4 +1,4 @@
-package valkey
+package vk
 
 import (
 	"github.com/valkey-io/valkey-go"
