@@ -5,6 +5,8 @@ import (
 	"context"
 )
 
+const KeyChairList = "chair-list"
+
 type PlaceStatus struct {
 	ChairList []string `json:"chair_list"`
 	QueueList []int64  `json:"queue_list"`
@@ -27,7 +29,7 @@ func GetPlaceStatus(ctx context.Context) (PlaceStatus, error) {
 }
 
 func fetchChairStatus(ctx context.Context) ([]string, error) {
-	cmd := vk.B().Lrange().Key("chair").Start(0).Stop(-1).Build()
+	cmd := vk.B().Lrange().Key(KeyChairList).Start(0).Stop(-1).Build()
 	resp := vk.Client().Do(ctx, cmd)
 
 	if resp.Error() != nil {

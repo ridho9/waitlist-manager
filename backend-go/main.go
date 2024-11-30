@@ -32,6 +32,7 @@ func main() {
 		r.Get("/queue/{queueId}", routes.GetQueue)
 
 		r.Get("/queue/{queueId}/stream-status", routes.StreamQueueStatus)
+		r.Post("/queue/{queueId}/check-in", routes.PostQueueCheckIn)
 	})
 
 	PORT := os.Getenv("BE_PORT")

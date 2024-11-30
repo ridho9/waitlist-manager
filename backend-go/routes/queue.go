@@ -61,3 +61,17 @@ func GetQueue(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(queue)
 }
+
+func PostQueueCheckIn(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	queueId := chi.URLParam(r, "queueId")
+
+	err := model.QueueCheckIn(ctx, queueId)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("error check in: %v", err), http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(201)
+	fmt.Fprintf(w, "ok")
+}

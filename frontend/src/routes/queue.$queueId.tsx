@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { PlaceStatus, listenPlaceStatusChange } from "@/lib/placeStatus";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 
@@ -16,7 +15,6 @@ export const Route = createFileRoute("/queue/$queueId")({
     return { queueInfo: data };
   },
   errorComponent: ({ error }) => {
-    useEffect(() => {});
     // Render an error message
     return (
       <div>
@@ -29,12 +27,19 @@ export const Route = createFileRoute("/queue/$queueId")({
   },
 });
 
+interface QueueStatus {
+  chair_list: string[];
+  queue_list: number[];
+  ready: boolean;
+  checked_in: boolean;
+}
+
 function RouteComponent() {
   const params = Route.useParams();
   const queueNumber = parseInt(params.queueId);
   const { queueInfo } = Route.useLoaderData();
 
-  const [queueStatus, setQueueStatus] = useState();
+  const [queueStatus, setQueueStatus] = useState<QueueStatus | undefined>();
 
   useEffect(() => {
     const url = `/api/queue/${queueNumber}/stream-status`;
@@ -44,12 +49,27 @@ function RouteComponent() {
     });
   }, []);
 
+  const checkIn = async () => {
+    console.log("checkin");
+    // const resp = await fetch(`/api/queue/2/check-in`, {
+    const resp = await fetch(`/api/queue/${params.queueId}/check-in`, {
+      method: "POST",
+    });
+  };
+
   return (
     <div>
       <p>Queue number {queueNumber}</p>
       <p>Name: {queueInfo.name}</p>
       <p>Number: {queueInfo.number}</p>
       <p>Queue status: {JSON.stringify(queueStatus)}</p>
+      {queueStatus?.ready ? (
+        <>
+          <Button onClick={checkIn}>Check In</Button>
+        </>
+      ) : (
+        <p>Waiting</p>
+      )}
     </div>
   );
 }

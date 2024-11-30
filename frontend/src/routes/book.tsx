@@ -3,7 +3,6 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { listenPlaceStatusChange, PlaceStatus } from "@/lib/placeStatus";
 
 export const Route = createFileRoute("/book")({
   component: BookComponent,
@@ -66,6 +65,19 @@ function BookComponent() {
       </div>
     </div>
   );
+}
+
+interface PlaceStatus {
+  chair_list: string[];
+  queue_list: string[];
+}
+
+function listenPlaceStatusChange(onChange: (status: PlaceStatus) => void) {
+  const url = `/api/stream-place-status`;
+  const evSource = new EventSource(url);
+  evSource.addEventListener("message", (ev) => {
+    onChange(JSON.parse(ev.data));
+  });
 }
 
 function PlaceStatusComp() {
