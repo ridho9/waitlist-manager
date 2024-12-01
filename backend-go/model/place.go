@@ -1,6 +1,7 @@
 package model
 
 import (
+	"backend-go/constant"
 	"backend-go/vk"
 	"context"
 )
@@ -10,6 +11,7 @@ const KeyChairList = "chair-list"
 type PlaceStatus struct {
 	ChairList []string `json:"chair_list"`
 	QueueList []int64  `json:"queue_list"`
+	MaxChair  int64    `json:"max_chair"`
 }
 
 func GetPlaceStatus(ctx context.Context) (PlaceStatus, error) {
@@ -24,6 +26,7 @@ func GetPlaceStatus(ctx context.Context) (PlaceStatus, error) {
 
 	result.ChairList = chairList
 	result.QueueList = queueList
+	result.MaxChair = constant.MAX_CHAIR
 
 	return result, nil
 }
