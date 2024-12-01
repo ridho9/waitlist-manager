@@ -1,9 +1,9 @@
 import { Users, Clock } from "lucide-react";
 import { useState, useEffect } from "react";
 
-interface PlaceStatusData {
+export interface PlaceStatusData {
   chair_list: string[];
-  queue_list: string[];
+  queue_list: number[];
   max_chair: number;
 }
 

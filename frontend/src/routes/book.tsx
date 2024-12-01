@@ -56,7 +56,7 @@ function QueueForm() {
 
     const body = {
       party_name: name,
-      party_number: diners,
+      party_number: parseInt(diners),
     };
     const resp = await fetch(`/api/queue`, {
       method: "POST",
