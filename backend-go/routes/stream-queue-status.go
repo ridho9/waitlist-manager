@@ -23,7 +23,6 @@ func StreamQueueStatus(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Connection", "keep-alive")
 
 	queueId := chi.URLParam(r, "queueId")
-	fmt.Println(queueId)
 
 msgLoop:
 	for {
@@ -63,5 +62,6 @@ func getQueueStatus(ctx context.Context, queueId string) (QueueStatus, error) {
 	if err != nil {
 		return QueueStatus{}, err
 	}
+	fmt.Println("get queue status", queueId, "ready", readyQueue)
 	return QueueStatus{Ready: readyQueue == queueId, CheckedIn: queueStatus.CheckedIn}, err
 }

@@ -15,7 +15,7 @@ type PlaceStatus struct {
 func GetPlaceStatus(ctx context.Context) (PlaceStatus, error) {
 	result := PlaceStatus{ChairList: []string{}}
 
-	chairList, err := fetchChairStatus(ctx)
+	chairList, err := GetChairStatus(ctx)
 	if err != nil {
 		return result, err
 	}
@@ -28,7 +28,7 @@ func GetPlaceStatus(ctx context.Context) (PlaceStatus, error) {
 	return result, nil
 }
 
-func fetchChairStatus(ctx context.Context) ([]string, error) {
+func GetChairStatus(ctx context.Context) ([]string, error) {
 	cmd := vk.B().Lrange().Key(KeyChairList).Start(0).Stop(-1).Build()
 	resp := vk.Client().Do(ctx, cmd)
 
@@ -37,4 +37,16 @@ func fetchChairStatus(ctx context.Context) ([]string, error) {
 	}
 
 	return resp.AsStrSlice()
+}
+
+func ChairListPop(ctx context.Context) (string, error) {
+	cmd := vk.B().Lpop().Key(KeyChairList).Count(1).Build()
+	resp := vk.Client().Do(ctx, cmd)
+
+	if resp.Error() != nil {
+		return "", resp.Error()
+	}
+
+	arr, err := resp.AsStrSlice()
+	return arr[0], err
 }

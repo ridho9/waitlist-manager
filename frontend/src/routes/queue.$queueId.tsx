@@ -47,6 +47,9 @@ function RouteComponent() {
     evSource.addEventListener("message", (ev) => {
       setQueueStatus(JSON.parse(ev.data));
     });
+    return () => {
+      evSource.close();
+    };
   }, []);
 
   const checkIn = async () => {
@@ -57,19 +60,21 @@ function RouteComponent() {
     });
   };
 
+  let checkInButton = <p>Waiting</p>;
+  if (queueStatus?.ready) {
+    checkInButton = <Button onClick={checkIn}>Check In</Button>;
+  }
+  if (queueStatus?.checked_in) {
+    checkInButton = <p>Checked In, enjoy your meal</p>;
+  }
+
   return (
     <div>
       <p>Queue number {queueNumber}</p>
       <p>Name: {queueInfo.name}</p>
       <p>Number: {queueInfo.number}</p>
       <p>Queue status: {JSON.stringify(queueStatus)}</p>
-      {queueStatus?.ready ? (
-        <>
-          <Button onClick={checkIn}>Check In</Button>
-        </>
-      ) : (
-        <p>Waiting</p>
-      )}
+      {checkInButton}
     </div>
   );
 }

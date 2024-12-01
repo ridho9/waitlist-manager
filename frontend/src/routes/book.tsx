@@ -33,7 +33,7 @@ function BookComponent() {
         setAssignedQueue(respBody);
         console.log("start timeout");
         await new Promise((res, rej) => setTimeout(res, 3000));
-        navigate({
+        await navigate({
           to: "/queue/$queueId",
           params: { queueId: `${respBody.queue_number}` },
         });
@@ -71,20 +71,19 @@ interface PlaceStatus {
   chair_list: string[];
   queue_list: string[];
 }
-
-function listenPlaceStatusChange(onChange: (status: PlaceStatus) => void) {
-  const url = `/api/stream-place-status`;
-  const evSource = new EventSource(url);
-  evSource.addEventListener("message", (ev) => {
-    onChange(JSON.parse(ev.data));
-  });
-}
-
 function PlaceStatusComp() {
   const [placeStatus, setPlaceStatus] = useState<PlaceStatus>();
 
   useEffect(() => {
-    listenPlaceStatusChange(setPlaceStatus);
+    const url = `/api/stream-place-status`;
+    const evSource = new EventSource(url);
+    evSource.addEventListener("message", (ev) => {
+      setPlaceStatus(JSON.parse(ev.data));
+    });
+
+    return () => {
+      evSource.close();
+    };
   }, []);
 
   return (
@@ -106,7 +105,7 @@ function PartyRegisterForm({
   onSubmit: (data: PartyRegisterData) => Promise<void>;
 }) {
   const [partyName, setPartyName] = useState("");
-  const [partyNumber, setPartyNumber] = useState(1);
+  const [partyNumber, setPartyNumber] = useState("1");
   const [buttonEnable, setButtonEnable] = useState(true);
 
   return (
@@ -114,7 +113,7 @@ function PartyRegisterForm({
       onSubmit={async (e) => {
         e.preventDefault();
         setButtonEnable(false);
-        await onSubmit({ partyName, partyNumber });
+        await onSubmit({ partyName, partyNumber: parseInt(partyNumber) });
         setButtonEnable(true);
       }}
     >
@@ -136,7 +135,9 @@ function PartyRegisterForm({
         max={10}
         placeholder="1"
         className="my-1"
-        onChange={(e) => setPartyNumber(e.currentTarget.valueAsNumber)}
+        onChange={(e) => {
+          setPartyNumber(e.currentTarget.value);
+        }}
       />
       <p>{buttonEnable}</p>
       <Button type="submit" disabled={!buttonEnable}>
