@@ -1,10 +1,10 @@
 package main
 
 import (
+	"backend-go/env"
 	"backend-go/routes"
 	"fmt"
 	"net/http"
-	"os"
 	"sync"
 
 	"github.com/go-chi/chi/v5"
@@ -13,6 +13,7 @@ import (
 )
 
 func main() {
+
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	r.Use(cors.AllowAll().Handler)
@@ -32,12 +33,10 @@ func main() {
 		r.Post("/queue/{queueId}/check-in", routes.PostQueueCheckIn)
 	})
 
-	PORT := os.Getenv("BE_PORT")
-
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {
-		http.ListenAndServe(fmt.Sprintf("0.0.0.0:%s", PORT), r)
+		http.ListenAndServe(fmt.Sprintf("0.0.0.0:%s", env.BE_PORT), r)
 		wg.Done()
 	}()
 
@@ -53,7 +52,7 @@ func main() {
 		wg.Done()
 	}()
 
-	fmt.Printf("running server on :%s\n", PORT)
+	fmt.Printf("running server on :%s\n", env.BE_PORT)
 
 	wg.Wait()
 }
