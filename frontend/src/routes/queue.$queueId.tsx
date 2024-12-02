@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Users, Clock, User } from "lucide-react";
 import { useState, useEffect } from "react";
+import { QRCode } from "react-qrcode-logo";
 
 export const Route = createFileRoute("/queue/$queueId")({
   component: RouteComponent,
@@ -137,14 +138,23 @@ function QueueStatus(params: {
           </p>
         </div>
         {queueStatus ? (
-          <WaitComponent
-            queueId={queueId}
-            queueStatus={queueStatus as QueueStatusData}
-            name={params.name}
-            diners={params.diners}
-            onCheckIn={checkIn}
-          />
+          <div className="bg-gray-50 p-4 rounded-lg mb-6">
+            <WaitComponent
+              queueId={queueId}
+              queueStatus={queueStatus as QueueStatusData}
+              name={params.name}
+              diners={params.diners}
+              onCheckIn={checkIn}
+            />
+          </div>
         ) : undefined}
+        <div className="bg-gray-50 p-4 rounded-lg mb-6">
+          <div className="flex flex-col items-center justify-center mb-2">
+            <p>Share This Queue</p>
+            <p>Open {window.location.href} or scan QR below</p>
+            <QRCode value={window.location.href} />
+          </div>
+        </div>
       </div>
     </>
   );
@@ -165,15 +175,15 @@ const WaitComponent = (params: {
 
   if (params.queueStatus.checked_in) {
     return (
-      <div className="bg-gray-50 p-4 rounded-lg">
+      <>
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Status</h2>
         <p className="text-lg font-medium">Checked In, Enjoy Your Meal</p>
-      </div>
+      </>
     );
   }
 
   return (
-    <div className="bg-gray-50 p-4 rounded-lg">
+    <>
       <h2 className="text-xl font-semibold text-gray-900 mb-4">Status</h2>
       {!isYourTurn && (
         <p className="text-lg text-yellow-600 font-medium">
@@ -198,6 +208,6 @@ const WaitComponent = (params: {
           Check In
         </Button>
       )}
-    </div>
+    </>
   );
 };
